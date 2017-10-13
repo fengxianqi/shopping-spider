@@ -30,6 +30,23 @@ namespace ShoppingSpider.Common
         //}
         public const string CharsetReg = @"(meta.*?charset=""?(?<Charset>[^\s""'>]+)""?)|(xml.*?encoding=""?(?<Charset>[^\s"">]+)""?)";
 
+
+        public static string HttpGet(string url)
+        {
+            string res = string.Empty;
+            HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
+            req.Method = "GET";
+            req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36";
+            using (HttpWebResponse response = req.GetResponse() as HttpWebResponse)
+            {
+               Stream stream=response.GetResponseStream();
+                StreamReader sr = new StreamReader(stream);
+                res = sr.ReadToEnd();
+            }
+
+            return res;
+        }
+
         /// <summary>
         /// 获取网页的内容
         /// </summary>
