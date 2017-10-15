@@ -1,11 +1,36 @@
-﻿
+﻿@model  IEnumerable<ShoppingSpider.Models.Products>
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = ViewData["keyword"];
     Layout = "~/Views/Shared/_Layout.cshtml";
 
+    
 }
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>来源</th>
+            <th>店铺</th>
+            <th>商品名称</th>
+            <th>商品价格</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Count() > 0)
+        {
+            foreach (var item in Model)
+            {
 
-<h2>Index</h2>
-<div>
-    @ViewData["str"]
-</div>
+                <tr>
+                    <td>@item.SourceSite</td>
+                    <td>@item.ShopName</td>
+                    <td><a href="@item.SourceUrl" target="_blank">@item.Name</a></td>
+                    <td>@item.Price</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr><td colspan="4">暂无数据</td></tr>
+        }
+    </tbody>
+</table>
