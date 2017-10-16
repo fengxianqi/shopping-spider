@@ -13,5 +13,6 @@ namespace ShoppingSpider.Models
         public string ImgUrl { get; set; }
         public string ShopName { get; set; }
         public string SourceUrl { get; set; }
+        public string commentsCount { get; set; }
     }
 }
