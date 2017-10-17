@@ -78,7 +78,7 @@
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="NSoup">
-      <HintPath>C:\Users\先其\Downloads\NSoup.dll</HintPath>
+      <HintPath>C:\Users\aric.feng\Downloads\NSoup.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

@@ -13,21 +13,50 @@ namespace ShoppingSpider.Controllers
     public class SearchController : Controller
     {
         // GET: Search
-        public ActionResult Index(string keyword,string[] cks,string sort)
+        public ActionResult Index(string keyword,string[] cks,string sort,int? page,int btn)
         {
+
+            
             List<Products> list = new List<Products>();
             if (string.IsNullOrEmpty(keyword)) return View(list);
-            
+            if (cks == null) return View(list);
+            if (btn == 2)
+            {
+                if (page == null)
+                {
+                    page = 2;
+                }
+                else
+                {
+                    page++;
+                }
+            }
             for (int i = 0; i < cks.Length; i++)
             {
                 if (cks[i] == "1")
                 {
-                    List<Products> l1 = GetJdList(keyword);
+                    List<Products> l1 = GetJdList(keyword,page);
                     list.AddRange(l1);
+                    ViewData["jd"] = true;
                 }
-                else if(cks[i]=="3")
+                else if (cks[i] == "2")
                 {
-                    List<Products> l1 = GetSnList(keyword, 1);
+                    ViewData["amazon"] = true;
+                    try
+                    {
+                        List<Products> l1 = GetAmazonList(keyword,page);
+                        list.AddRange(l1);
+                        
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
+                else if (cks[i] == "3")
+                {
+                    ViewData["sn"] = true;
+                    List<Products> l1 = GetSnList(keyword,page);
                     list.AddRange(l1);
                 }
             }
@@ -51,19 +80,21 @@ namespace ShoppingSpider.Controllers
                 //}
                
             }
-            
+            ViewData["price"] = sort=="1" ;
             ViewData["keyword"] = keyword;
+            ViewData["page"] = page;
             return View(list);
         }
 
 
-        public ActionResult Test(string keyword, string[] cks, string sort)
+        public ActionResult Test(string keyword, string[] cks, string sort,int page)
         {
             keyword = "硬盘";
             keyword = Url.Encode(keyword);
-            //https://search.suning.com/emall/searchProductList.do?keyword=%E7%A1%AC%E7%9B%98&ci=0&pg=01&cp=1&il=0&st=0&iy=0&adNumber=0&n=1&sesab=BBA&id=IDENTIFYING&cc=020
-            string url = "https://search.suning.com/" + keyword+"/";
-            string str = Common.HttpHelper.GetHttpContent(url);
+            //https://www.amazon.cn/s/ref=sr_pg_4?rh=i%3Aaps%2Ck%3A%E7%A1%AC%E7%9B%98&page=4&keywords=%E7%A1%AC%E7%9B%98&ie=UTF8&qid=1508227732
+            //https://www.amazon.cn/s/ref=sr_pg_2?rh=i%3Aaps%2Ck%3A"+keyword+"&page="+page+"&keywords="+keyword+"&ie=UTF8&qid=1508227797
+            string url = "https://www.amazon.cn/s/ref=sr_pg_"+page+"?rh=i%3Aaps%2Ck%3A" + keyword + "&page=" + page + "&keywords=" + keyword + "&ie=UTF8&qid=1508227797";
+            string str = Common.HttpHelper.HttpGet(url);
             //Document htmlDoc = NSoup.NSoupClient.Parse(str);
             //获得item的li
             //Elements lis = htmlDoc.GetElementById("filter-results").Select(".clearfix .product");
@@ -92,11 +123,12 @@ namespace ShoppingSpider.Controllers
             ViewData["str"] = str ;
             return View();
         }
-        public List<Products> GetJdList(string keyword,int page=1)
+        public List<Products> GetJdList(string keyword,int? page=1)
         {
+            if (page % 2 == 0) page++;
             keyword = Url.Encode(keyword);
             //https://search.jd.com/Search?keyword=%E7%94%B7%E8%A3%85&enc=utf-8&qrst=1&rt=1&stop=1&vt=2&cid2=1342&page=3
-            string url = "https://search.jd.com/Search?keyword=" + keyword + "&enc=utf-8&qrst=1&rt=1&stop=1&vt=2&page=";
+            string url = "https://search.jd.com/Search?keyword=" + keyword + "&enc=utf-8&qrst=1&rt=1&stop=1&vt=2&page="+page;
             string str = Common.HttpHelper.HttpGet(url);
             Document htmlDoc = NSoup.NSoupClient.Parse(str);
             //获得item的li
@@ -123,12 +155,44 @@ namespace ShoppingSpider.Controllers
             return list;
 
         }
-        public List<Products> GetSnList(string keyword,int page=1)
+
+        public List<Products> GetAmazonList(string keyword, int? page = 1)
         {
-            keyword = "硬盘";
+            if (page == null) page = 1;
             keyword = Url.Encode(keyword);
+            string url = "https://www.amazon.cn/s/ref=sr_pg_" + page + "?rh=i%3Aaps%2Ck%3A" + keyword + "&page=" + page + "&keywords=" + keyword + "&ie=UTF8&qid=1508227797";
+            string str = Common.HttpHelper.HttpGet(url);
+            Document htmlDoc = NSoup.NSoupClient.Parse(str);
+            //获得item的li
+            Elements lis = htmlDoc.GetElementById("s-results-list-atf").Select(".s-result-item");
+            List<Products> list = new List<Products>();
+            Products pro = null;
+            foreach (var item in lis)
+            {
+
+                //li内的warp
+                var liWarp = item.Select(".s-item-container");
+                pro = new Products();
+                pro.ImgUrl =  liWarp.Select(".a-spacing-base img").Attr("src");
+                pro.Name = liWarp.Select("h2.s-access-title").Text;
+                pro.Price = Convert.ToDouble(liWarp.Select(".s-price").Text.Substring(1));
+                pro.ShopName = "";
+                pro.SourceUrl = liWarp.Select(".a-row .a-row .s-color-twister-title-link").Attr("href");
+                pro.SourceSite = "www.amazon.cn";
+                pro.commentsCount = "";
+                list.Add(pro);
+            }
+
+            return list;
+
+        }
+
+        public List<Products> GetSnList(string keyword,int? page=1)
+        {
+            keyword = Url.Encode(keyword);
+            if (page == null) page = 1;
             //https://search.suning.com/emall/searchProductList.do?keyword=%E7%A1%AC%E7%9B%98&ci=0&pg=01&cp=1&il=0&st=0&iy=0&adNumber=0&n=1&sesab=BBA&id=IDENTIFYING&cc=020
-            string url = "https://search.suning.com/emall/searchProductList.do?keyword=" + keyword + "&ci=0&pg=01&cp=1&il=0&st=0&iy=0&adNumber=0&n=1&sesab=BBA&id=IDENTIFYING&cc=020";
+            string url = "https://search.suning.com/emall/searchProductList.do?keyword=" + keyword + "&ci=0&pg=01&cp="+(page-1).ToString()+"&il=0&st=0&iy=0&adNumber=0&n=1&sesab=BBA&id=IDENTIFYING&cc=020";
             string str = Common.HttpHelper.GetHttpContent(url);
             Document htmlDoc = NSoup.NSoupClient.Parse(str);
             //获得item的li

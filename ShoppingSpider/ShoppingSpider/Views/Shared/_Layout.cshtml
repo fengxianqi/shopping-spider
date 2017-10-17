@@ -31,7 +31,7 @@
                                 <div class="form-group">
                                     <input type="text" class="form-control" name="keyword" id="keyword" value="@ViewData["keyword"]" />
                                 </div>
-                                <button class="btn btn-default" id="btn-search">搜索</button>
+                                <button class="btn btn-default" id="btn-search" name="btn" value="1">搜索</button>
                             </div>
                         </li>
 
@@ -43,16 +43,20 @@
         </div>
         <div class="container panel" id="parameters">
             <div class="checkbox checkbox-inline">
-                <label><input type="checkbox" checked="checked" name="cks" id="ck-jd" value="1" />京东</label>
+                <label><input type="checkbox" checked="@ViewData["jd"]" name="cks" id="ck-jd" value="1" />京东</label>
             </div>
             <div class="checkbox checkbox-inline">
-                <label><input type="checkbox" checked="checked" name="cks" id="ck-tb" value="2" />淘宝</label>
+                <label><input type="checkbox" checked="@ViewData["amazon"]" name="cks" id="ck-tb" value="2" />亚马逊</label>
             </div>
             <div class="checkbox checkbox-inline">
-                <label><input type="checkbox" checked="checked" name="cks" id="ck-sn" value="3" />苏宁</label>
+                <label><input type="checkbox" checked="@ViewData["sn"]" name="cks" id="ck-sn" value="3" />苏宁</label>
             </div>
             <div class="checkbox checkbox-inline">
-                <label><input type="checkbox" checked="checked" name="sort"  value="1" />价格从低到高</label>
+                <label><input type="checkbox" checked="@ViewData["price"]" name="sort"  value="1" />价格从低到高</label>
+            </div>
+            <div>
+                第<input type="text" class="input-sm form-control form-horizontal" style="width:50px;display:inline-block" name="page" value="@ViewData["page"]" />页
+                <button class="btn btn-default" name="btn" value="2">下一页</button>
             </div>
         </div>
     </form>
